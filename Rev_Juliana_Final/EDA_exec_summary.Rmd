@@ -1,0 +1,61 @@
+---
+title: "EDA Executive Summary"
+author: "Juliana Rev"
+date: "12/8/2019"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    highlight: "tango"
+---
+
+#Introduction
+VAERS, or the Vaccine Adverse Event Reporting System, is the US Department of Health and Human Services' system for reporting claims of vaccine injury.[1] While some injuries are reported by healthcare providers per government mandate, the majority of claims are self-reported by the patient or their guardian.[2] Although there is no way to prove whether vaccines caused the injury, VAERS reports have been a popular tool for the anti-vaccination movement. The existence of VAERS is seen as proof that vaccine injury is more prevalent then claimed by the pharmaceutical industry, but the self-reporting system makes it liable to over reporting. This project used VAERS data from 2014 to analyze the patterns, severity, and magnitude of VAERS reports and examine their place in the vaccine debate.[3]
+
+<br>
+
+#Analysis
+
+```{r, echo = FALSE, message=FALSE}
+library(tidyverse)
+library(dplyr)
+library(gdata)
+library(readr)
+```
+
+```{r, echo=FALSE}
+read_rds("data/processed/plot_state_perc_hosp.rds")
+read_rds("data/processed/plot_state_perc_dead.rds")
+```
+
+Utilizing estimated vaccination rates from 2014's NIS-Child survey and estimated population data from the Anne E. Casey's KIDS COUNT, we were able to estimate the number of children vaccinated for MMR that were between 18-35 months old in each state.[4][5] Using this data we could find an approximate proportion of children reporting a severe vaccine injury and compare it to the pharmaceutical company's claim that injury occurs in only one in a million children.[6] While there is no standard definition for a severe vaccine reaction, two criteria we considered were all children who reported requiring hospitalization and all children who died. In the graphics above we get an idea of these two populations' sizes. They are restricted to only a very small number of states, showing their relative rarity.
+
+####Proportion of Vaccinated Children Reporting Hospitalization and Death
+```{r, echo=FALSE}
+read_rds("data/processed/stat_hosp.rds")
+
+```
+
+####Proportion of Vaccinated Children Reporting Death
+```{r, echo=FALSE}
+read_rds("data/processed/stat_dead.rds")
+```
+
+This point can be further explained by looking at the proportion of the entire population that meet this definition of severe vaccine injury. We should assume that VAERS will overestimate the vaccine injury rate, due to data being self reported by people who, in most cases, are not medical professionals. As such they are more likely to consider something a vaccine injury then the doctors and scientists deciding the official injury rate. Given the nature of the data, the fact that the estimates are so close to the pharmaceutical company's expected injury rate of 0.000001 is a positive sign. Even without adjusting for overestimation, the estimated death rate is already below the expected proportion and the hospitalization rate is only slightly higher at 0.0000025. 
+
+Rather than contradict the medical community's claims of the MMR's safety, these findings seem to support their conclusions. While more analysis would need to be done to prove these findings, looking at data from other years or injury rates from other vaccines, the early results point towards the MMR's safety. It also calls into question the traditional anti-vaccination narrative, which uses VAERS as proof that the prevalence of vaccine injury is higher then the pharmaceutical industry claims. Instead these findings imply that VAERS roughly supports the expected rate of severe vaccine injury, with the small difference due to inherent tendency for the data to overestimate the number of vaccine injuries.
+
+<br>
+
+#Footnotes
+[1]“About VAERS.” VAERS, US Department of Health and Human Services, https://vaers.hhs.gov/about.html.
+
+[2]ibid
+
+[3]“VAERS Data Sets.” VAERS, US Department of Health and Human Services, https://vaers.hhs.gov/data/datasets.html.
+
+[4]“NIS - Datasets and Related Documentation for the National Immunization Survey, 2010 to 2014.” Centers for Disease Control and Prevention, Centers for Disease Control and Prevention, 6 Nov. 2015, https://www.cdc.gov/nchs/nis/data_files.htm.
+
+[5]“Child Population by Age Group: KIDS COUNT Data Center.” KIDS COUNT Data Center: A Project of the Annie E. Casey Foundation, Annie E Casey Foundation, https://datacenter.kidscount.org/data/tables/101-child-population-by-age-group#detailed/1/any/false/37,871,870,573,869,36,868,867,133,38/62,63,64,6,4693/419,420.
+
+[6] Spencer, Jeanne P., Ruth H. Trondsen Pawlowski, and Stephanie Thomas. “Vaccine Adverse Events: Separating Myth from Reality.” American Family Physician, June 15, 2017. https://www.aafp.org/afp/2017/0615/p786.html#afp20170615p786-b14.

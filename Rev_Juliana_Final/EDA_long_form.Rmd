@@ -1,0 +1,272 @@
+---
+title: "Data Science Final Project"
+author: "Juliana Rev"
+date: "12/5/2019"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    highlight: "tango"
+---
+#Introduction
+VAERS, or the Vaccine Adverse Event Reporting System, is the US Department of Health and Human Services' system for reporting claims of vaccine injury.[1] While some injuries are reported by healthcare providers per government mandate, the majority of claims are self-reported by the patient or their guardian.[2] Although there is no way to prove whether vaccines caused the injury, VAERS reports have been a popular tool for the anti-vaccination movement. The existence of VAERS is seen as proof that vaccine injury is more prevalent then claimed by the pharmaceutical industry, but the self-reporting system makes it liable to over reporting. This project uses VAERS data from 2014 to analyze the patterns, severity, and magnitude of VAERS reports and examine their place in the vaccine debate.[3]
+<br>
+
+#Preliminary Analysis
+To start, we will examine the VAERS Data Set, which is a combination of VAERS reports and information on the vaccines in question.
+```{r, echo = FALSE, message=FALSE}
+library(tidyverse)
+library(dplyr)
+library(gdata)
+library(readr)
+```
+
+```{r, echo = FALSE, message=FALSE}
+options(max.print = 100)
+read_rds("data/processed/data_vax_2.rds")
+
+```
+
+###State
+
+```{r, echo = FALSE, fig.width= 15}
+read_rds("data/processed/plot_state.rds")
+```
+
+This data set offers several variables of interest for simple, uni variate analysis. The first of these variables is the state where each vaccination was received. Here we can see a high number of NA values, corresponding to the information not being given. The high rate of non-response is notable, because it suggests possible issues with the data's veracity. The less information shared, the harder it is to verify the claims of injury. One criticism of VAERS is that its self-reporting system allows for people to flood it with fake or exaggerated claims, and the high amount of missing information makes this argument harder to refute.Excluding the NAs, the states with the highest number of VAERS reports include California, New York, Pennsylvania, Ohio, and Texas. These are all states that have been in the news for their low vaccination rates. This data was taken the year before the Disneyland measles outbreak, which spurred the removal of the personal belief exception in California, and five years before New York's measles epidemic. Other states, like Pennsylvania, Ohio, and Texas, have a history of vaccine hesitancy either due to religious/philosophical beliefs (like the Amish populations in Pennsylvania and Ohio) or an aversion to government interference, as is the case in Texas.
+
+However, many of these states correspond to those with the largest population. This begs the question of whether these states have higher incidences of VAERS reports due to factors like vaccine hesitancy or increased rate of injuries, or if the number of reports is in line with the states' population. To investigate this we used census estimates of each state's population to see what proportion of the state reported a vaccine injury.[4]
+
+```{r, echo=FALSE, fig.width=15}
+read_rds("data/processed/plot_state_prop.rds")
+```
+
+California is still far ahead of other stats, with VAERS reports representing .4% of the population. While many of the same states make up the highest rates of reporting, states like Michigan, North Carolina, and Washington become more prominent.Washington is another state strongly associated with vaccine hesitancy following 2019's measles outbreak and Michigan's fear over falling vaccination's rate lead to legislative changes forcing parent's to sign a waiver before refusing their children's shots.[5] North Carolina appears to be the odd exception by being the only state with a high proportion of VAERS reports without a history of vaccine hesitancy. Without data from other years, it's hard to say whether this year had an unusually high rate of VAERS reports. This possibly Indicates  a genuine higher rate of vaccine injury in a stronger manner than it does for states with a stronger history in the anti-vaccination movement.
+
+###Sex
+```{r, echo=FALSE}
+read_rds("data/processed/plot_sex.rds")
+read_rds("data/processed/plot_sex_age.rds")
+```
+
+**Here newborns are less than 1 years old, toddlers between 1 and 3 years old, children between 4 and 9 years old, tweens between 10 and 12, and teens between 13 to 19 years old.**
+
+Another variable of interest is the sex of the individual. There is a higher incidence in reporting for women compared to men, which goes against the expected result. While there are a roughly equal amount of men and women in the country, these results could indicate a gender bias in reporting. Women are more likely to be involved in debates over vaccines, and thus more likely to be aware of VAERS. To verify this we used a tile plot looking at the relationship between age and sex. Thus while the rates of reporting are relatively similar for young children, as they get older we start to see a higher incidence of cases in women. We also have a smaller group of people's who's sex is not noted. These appear to be spread evenly across the various age groups which raises questions as to why they were marked 'unassigned'. One theory is user error, that these small amount of cases are people who accidentally chose 'U'. Another is that 'U' represents people not included in the traditional definitions of gender (such as trans or non-binary individuals) or those who chose not to answer due to privacy concerns. Many people who believe themselves or their child to be vaccine injured can be skeptical of the government and it's involvement with the pharmaceutical industry. While no identifying information is included in the data set, concerns over personal privacy still might explain the lack of information.
+
+###Number of Days between Vaccination and Onset of Injury
+```{r, echo=FALSE, warning=FALSE}
+read_rds("data/processed/plot_numdays.rds")
+read_rds("data/processed/stat_numdays.rds")
+```
+
+The next graph examines the amount of time between vaccination and a VAERS Report being made. This first graph focuses on a cases reported less then one week after vaccination. Here the distribution is skewed right, with a mean between 2 and 3 days. This appears rather reasonable, given it would take time for any symptom or injury to be noticed and reported. The clustering around early reporting makes even more sense given some injuries require mandatory reporting by medical officials. Those are most likely to be dealt with as soon as the symptoms are recognizes, likely in the early days post vaccination.
+
+```{r, echo=FALSE}
+read_rds("data/processed/plot_numdaysplus7.rds")
+read_rds("data/processed/stat_numdaysplus7.rds")
+```
+
+If we examine reports issued between one week and one month after vaccination, we see a sharper right skewed trend, with a large drop off after the mean of 15-16 days. This is expected, given the further away from the vaccination, the less likely a patient's medical event would be related to the vaccine. There is, however, a peculiar rise in reporting around 26-27 days post vaccination. This is an outlier from the general trend, and could be attributed to busy schedules, people who didn't previously know about VAERS, or those who only decided to report their injuries later on. This is especially concerning as the longer it takes to report, the more potential there is for someone to self diagnose based based on later events.
+
+```{r, echo=FALSE, warning=FALSE}
+read_rds("data/processed/plot_numdays2.rds")
+```
+
+Here we can see a roughly linear relationship between the number of days between vaccination and reporting and the number of days between injury onset and reporting. There is a significant group of people who reported immediately after the onset of their injury, but whose injury occurred many days post-vaccination. These claims should be subject to the most scrutiny, as these are clearly people who knew how to report but are claiming injury from vaccinations that, in some cases, were years prior. In both cases, delays in reporting can throw whether VAERS offers an accurate picture of vaccine injury into question.
+
+###Age
+
+```{r, echo=FALSE}
+read_rds("data/processed/plot_age.rds")
+```
+
+**Here newborns are less than 1 years old, toddlers between 1 and 3 years old, children between 4 and 9 years old, tweens between 10 and 12, and teens between 13 to 19 years old.**
+
+Looking at the breakdown of VAERS reports by age, we see a bi modal distribution, with peaks at the new-born/toddler age and again in the sixties. The high number of reports for children under 4 years old is expected, as many childhood vaccines are administered before children reach school age. Those are also the age most parents are likely to stop vaccinating and claim vaccine injury. In particular the MMR vaccine, which has been at the center of the anti-vaccination movement since the publishing of Andrew Wakefield's debunked study linking the vaccine to autism, is first administered around 18 months, putting it within this first peak. 
+
+```{r, echo=FALSE, fig.width=10}
+read_rds("data/processed/plot_age_vaccine.rds")
+```
+
+This next graph shows an age breakdown of reports by vaccine for vaccines with more than 50 VAERS reports. The choice to restrict our sample space to those with 50 or more reports for that combination of vaccine and age group. It made the graph more manageable, by removing vaccinations with a small sample space that would not significantly contribute to the age breakdown. Here we can see that the spike in VAERS reports for those in their sixties can be attributed to three vaccines: the annual flu shot (FLU3), the Zoster Herpes aka Shingles vaccine (VARZOS) and the Pneumonia vaccine (PPV).[6] All three of these vaccines are associated with diseases that are primarily experienced or particularly dangerous to the elderly. It makes sense for the VAERS reports to peak at this age range, as this was the first time most people had to get the Shingles or Pneumonia vaccine. In addition, given these vaccines target the senior population, there will be more vaccines given to the younger portion as part of general demographics. People classified in the 'sixties' age group in 2014 were born between 1945 and 1954, which corresponds to the large Baby Boomer generation. The combination of people who would be in the seventies, eighties, and nineties age groups dying; means there are simply more people getting vaccinated in the sixties age group which leads to more VAERS reports.
+
+###Vaccine
+```{r, echo=FALSE, fig.width= 15}
+read_rds("data/processed/plot_vaccine.rds")
+```
+
+Examining the general breakdown of vaccines, there is as slight bi modal distribution, with peaks around the FLU3 Shot and Shingles vaccine. Here the vaccines are restricted to those with at least 500 VAERS reports, to allow for a readable graphic. The flu shot is by far the most common, likely because it is one of the few vaccines given across age ranges. Most vaccines have a small target window of when they should be administered. While boosters and catch up vaccinations may be administered, those are a small fraction of the people vaccinated in a given year. By contrast, the flu vaccine is given annually to people of all ages, meaning there's a larger population of those vaccinated and hence a higher number of VAERS reports. Other high values correspond to vaccines which were newer or had to be re administered semi frequently. For example the shingles vaccine was recommended for nearly everyone over sixty and required a booster every 3 to 4 years.[7] As stated above, this group partially contained the large Baby Boomer generation, explaining the large amount of reports. In addition, vaccines like HPV4, were relatively new to market and had a larger age range of people recommended to receive the vaccine, leading to the possibility of many vaccine injury claims.[8] HPV has also been a target of the anti-vaccination movement, with reports of girls developing Tourettes or Guillain-Barre syndrome making national headlines[9]. This could make people more likely to make reports if they believe that a vaccine is prone to cause injury. The outlier here is the chicken pox vaccine, which was not new, targeting a large population, or particularly controversial. Looking at the graphic analyzing the relationship between individual vaccines and age, there is no stand out. The highest number of reports is for the toddler age range, but that is to be expected given the vaccine is recommended for children between 12 and 18 months, and even then its not an overwhelming number of reports.[10] Instead it appears to be a steady, consistent build up of reports which have added up to its overall total.
+
+###Month
+```{r, echo=FALSE}
+read_rds("data/processed/plot_month.rds")
+```
+
+When examining the VAERS reports by the month the vaccine was reported being received, we see a left skewed distribution. Some of this can be attributed to August and September being the traditional months for children to receive vaccinations in anticipation of starting school. However the peak of vaccination appears to be October. This likely comes from flu vaccine, which is typically administered in the fall to coincide with flu season. As the flu had the highest number of VAERS reports and is typically administered in the fall, this likely explains the distribution.
+
+<br>
+
+#Biavariate Analysis
+
+###State and Sex 
+```{r, echo=FALSE, fig.width=15}
+read_rds("data/processed/plot_state_sex.rds")
+```
+
+Looking at the relationship between state and sex, we see a continuation of the general trends for sex. For the vast majority of states there are more females reporting injury than males. It is also notable that reports that did not specify a state also overwhelmingly did not choose a sex. This lends credence to the idea that a large number of those reporting to VAERS do not wish to give out their personal information to a government agency. The reason for this choice can only be speculated, but it is noteworthy.
+
+###Age and Sex & Month Recieved and Sex
+```{r, echo=FALSE}
+read_rds("data/processed/plot_sex_age.rds")
+read_rds("data/processed/plot_month_sex.rds")
+```
+
+This relationship continues for both age group and sex and the month a vaccine was received and sex. The main difference is that this factorized data set excludes reports with NA for their age or month received. As such, the trend of people choosing to exclude personal information can not be seen in this graph. 
+
+
+###Month Recieved and Age
+```{r, echo=FALSE}
+read_rds("data/processed/plot_age_month.rds")
+```
+
+**Here newborns are less than 1 years old, toddlers between 1 and 3 years old, children between 4 and 9 years old, tweens between 10 and 12, and teens between 13 to 19 years old.**
+
+Once again there is the continued trend from the general one about month received. For example, the months around October, when the flu vaccine is administered, have a strong rise in the number of reports. What this graphic helps show is the earlier speculated linkage of the rise in VAERS reports to children receiving vaccines ahead of starting school. For school age children, vaccines are usually given ahead of kindergarten (corresponding with the child age group) and high school (corresponding to the teen age group). This graphic shows that those two groups are the ones with the highest number of VAERS reports for August, when school usually starts.
+
+```{r, echo=FALSE}
+read_rds("data/processed/plot_vaccine_month.rds")
+```
+
+This graphic shows the relationship between vaccines and the month they were received (for n > 50). Two key pieces of information can be understood by this graphic: first it confirms earlier speculation that the spike in VAERS reports in October can be explained by the flu vaccine, secondarily this graphic illuminates the seasonality of various vaccines. While some, like the flu vaccine, are obvious, it is interesting that MMRV reports mainly occur in the middle of the year compared to the typical MMR or Varicella vaccine. This could be explained by the fact MMRV is usually less common than administering MMR and Varicella separately, given it has a higher risk of seizures when given to children under 2.[11] This could explain why MMRV was unable to pass the 50 reports threshold for several months while MMR and Varicella did.
+
+###State and Age
+```{r, echo=FALSE, fig.width=10, fig.height= 15}
+read_rds("data/processed/plot_state_age.rds")
+```
+
+**Here newborns are less than 1 years old, toddlers between 1 and 3 years old, children between 4 and 9 years old, tweens between 10 and 12, and teens between 13 to 19 years old.**
+
+Next is the graphic which displays the relationship between the state and the age of the patient. As most of the tiles are fairly similar, this is mainly useful to see where there is missing data. Most of the missing values are for US territories like Guam, the Virgin Islands or Micronesia or for people in their nineties, implying this is a relatively small group overall. The exception is California, where many of its age groups (especially newborn, toddler, child, tween, and teen) have a much higher number of reports. Again, as seen above, this can likely be attributed both to California being the most populous state and having the highest proportion of VAERS reports. It is also interesting that listing NA for their state is most common for older patients. This might be user error, with people forgetting to select a state, or older patients being more cautious releasing their information.
+
+###Vaccine, Age, and Number of Days Between Onset and Reporting
+```{r, echo=FALSE, fig.width=9}
+read_rds("data/processed/plot_vaccine_age_meanrpt.rds")
+read_rds("data/processed/plot_vaccine_age_medianrpt.rds")
+```
+
+**Here newborns are less than 1 years old, toddlers between 1 and 3 years old, children between 4 and 9 years old, tweens between 10 and 12, and teens between 13 to 19 years old.**
+
+Next came examining the mean and median number of days between the onset of the injury and the VAERS report. This was done for vaccines with 50+ reports in that age group and excluding any reports that did not include a date of report, date of the injury's onset, and age of patient. Here what is most interesting is the range of values between the mean and the median. The mean has values up to 600+, which is nearly two years. While this only applies to one vaccine and age group combination (anthrax for those in their thirties), the spread of these values shows that there are large outliers that impact the data set. While the majority of the graph indicate small values, the spread means that the only information we learn is that the mean is less than a year. Data reported, on average, 6+ months after the fact could be viewed more suspiciously due to the long gap between the injury and reporting.
+
+The median paints a slightly different picture. This graphic features a much smaller range, suggesting half of the reports are typically made within a month. Particularly interesting is the fact that the outliers are not the same between graphics. For the mean, it is a vaccine typically given to members of the military. Outliers there might be explained by patients being deployed and unable to make a report until returning to the US. By contrast, for the median the high outlier is the Hepatitis B vaccine typically given to babies shortly after birth. While this could possibly be explained by new parents, unsure as to what is normal for their baby and with little time to report, this also is the time parents are most hyper vigilant about their children and off of work to care for their newborns. With such a potential disparity between the median and the mean the question becomes how many influential outliers are there to cause this difference. If a significant percentage of the reports are made well after the fact, then their veracity is called into question, as people's memories typically become less clear as time goes on. 
+
+###Vaccine, Age, and Number of Days between Vaccination and Injury Onset
+```{r, echo=FALSE, fig.width=9}
+read_rds("data/processed/plot_vaccine_age_meanonset.rds")
+read_rds("data/processed/plot_vaccine_age_medianonset.rds")
+```
+
+**Here newborns are less than 1 years old, toddlers between 1 and 3 years old, children between 4 and 9 years old, tweens between 10 and 12, and teens between 13 to 19 years old.**
+
+Changing the focus to the relationship between number of days between vaccination and the reported onset of the injury shows a similar trend to that for the number of days between the onset of the injury and the VAERS report. While these two graphs have different vaccines serve as their high extremes (here the vaccine with the high mean in the flu shot for newborns, and the one with a high median being smallpox for those in their twenties), both sets offer similar takeaways. The ranges of the means are both 10+ times higher than those of the median. While part of this is inherent to the mean, which is more sensitive to outliers than the median, this large discrepancy in size suggests the outliers are fairly long and influential. If the median number of days between vaccination and the onset of a vaccine injury for the flu shot in newborns is less than 2.5 days and  and the mean is over 100, then there must be several very large and influential points causing that discrepancy. Even more so than the last set of graphs, the longer between the vaccination and the injury's onset the less likely there is any actual link between the two. Thus examining the difference between the mean and the median helps identify where these potential pitfalls might lie, so a more careful analysis can be made by taking into consideration the accuracy of these pieces of data.
+
+#Close Analysis of MMR Vaccine in Children between 1 and 3
+
+For a finer analysis of VAERS data, I used NORC's NIS-Child study, which measures vaccination rates in children 18 - 35 months old, to measure the approximate rate of vaccine injury/VAERS reports per state.[12] I decided to focus on the MMR vaccine, which has been the center of vaccine hesitancy since the publication of the now retracted Andrew Wakefield study linking MMR to autism. It also is of particular relevance given the recent measles outbreaks throughout the US. This data from 2014 represents the year before the 2015 Disneyland measles outbreak which lead to the removal of the philosophical belief exemption in California and increase scrutiny of vaccine laws in general. To figure out what proportion of those with vaccinated for MMR reported to VAERS that year, I used the 2014 NIS-Child's estimation of each state's vaccination rate for MMR and the Annie E Casey Foundation's estimates of the number of children per state between 0-4 years old in 2014.[13] This estimated population assumed to be equally distributed across the 0-48 month age range and multiplied by (17/48) to estimate the number of children in each state between 18 - 35 months old. After being multiplied by the estimated MMR vaccination rate to find the estimated number of children vaccinated for MMR between 18-35 months old per state, we divided that by the number of MMR VAERS reports to find an estimated proportion of vaccinated children reporting injuries from the MMR vaccine. 
+
+```{r, echo=FALSE, fig.width=15}
+read_rds("data/processed/plot_state_perc.rds")
+```
+
+In an interesting contrast to larger trend, with this subset of the population the states with the highest proportion of vaccinated children reporting to VAERS about MMR are the least populated. Three of the four states with the highest proportion of VAERS reports are Idaho, Montana, Nevada, and Vermont are all states that rank in the bottom 18 for population.[14] In addition, none of these states are particularly associated with the anti-vaccination movement. 
+
+```{r echo=FALSE}
+data_vax_child <- read_rds("data/processed/data_vax_child.rds")
+data_vax_child[12,]
+data_vax_child[25,]
+data_vax_child[32,]
+data_vax_child[45,]
+```
+
+
+Looking at the individual rows for the 4 states, we can see they vary widely in terms of vaccine rates, with Idaho well below the herd immunity threshold (usually believed to be 95%) at a mere 89.7% vaccination rate, while Montana and Vermont are much higher with 93.4 and 93.2% vaccination rates respectively. As such it appears these high values are part of the randomness of vaccine injury, and the fact that states with lower population are more sensitive to this randomness. An increase of 10 VAERS reports is more significant in a state like Vermont versus a more populated state like California or Michigan. 
+
+###Analysis of Severe Vaccine Injuries
+
+```{r, echo=FALSE, fig.width=15}
+read_rds("data/processed/plot_state_perc_severe.rds")
+```
+
+**Here a severe injury is considered a reported death, hospitalization, or ER visit**
+
+When looking at the proportion of children with reports of severe vaccine injuries, many of the same trends continue on a smaller scale. The states with the highest proportion continue to be those with small populations with the top 4 (Alaska, Idaho, New Mexico, Rhode Island, and Maine) all being in the bottom 15 for their population size.[15] Of particular note is the inclusion of Maine, which has some of the highest MMR vaccination rates. 
+
+```{r, echo=FALSE}
+read_rds("data/processed/stat_severe.rds")
+```
+
+
+The main issue is categorizing what is a severe vaccine injury. When we compare the number of reports using this definition of severe to the total number of children in the US estimated to be between 18 and 35 months, we get an injury rate of about 1 in 50,00. These numbers seem to contradict the medical community's claim that only 1/1,000,000 children vaccinated for MMR will experience a severe vaccine reaction.[16] This must make us re-examine our definition of a severe vaccine injury. Parents of young children can are often overly cautious when it comes to their children. A trip to the ER doesn't always correspond to a serious emergency. 
+
+```{r, echo=FALSE}
+read_rds("data/processed/plot_state_perc_hosp.rds")
+read_rds("data/processed/plot_state_perc_dead.rds")
+```
+
+If we restrict severe injury to refer to only hospitalization or death, we see a large decrease in the VAERS reports. Notably, the majority states start to fall below the expected 1/1,000,000 severe vaccine injuries. Only 3 of the US states had reports of children between 18-35 months being hospitalized as a result of MMR. This improves even more if we limit ourselves to deaths, as only 1 state had a reported fatality. While per state these numbers do not match the 1 in 1,000,000 threshold, if we extend the population to all children between 18 and 35 months we do see the numbers fall into line.
+
+####Proportion of Vaccinated Children Reporting Hospitalization and Death
+```{r, echo=FALSE}
+read_rds("data/processed/stat_hosp.rds")
+
+```
+
+####Proportion of Vaccinated Children Reporting Death
+```{r, echo=FALSE}
+read_rds("data/processed/stat_dead.rds")
+```
+
+The above two numbers above represent the nationwide reported hospitalization and death rate from MMR for children between 18 and 35 months old in 2014 respectively. The values for both definitions of a severe injury fall near or below the expected injury rate of 0.000001. We should assume that VAERS will overestimate the vaccine injury rate, due to data being self reporting by people who are not medical professionals, and thus liable to incorrectly attribute medical events to vaccines. For hospitalization, our estimated proportion is about 2.5 in a million which is very close to our expected value given the nature of the data. If we consider only death to be a serious vaccine injury, then VAERS might actually underestimate the death rate as only roughly 1 in 2,000,000. 
+
+<br>
+
+#Conclusion
+Over the years VAERS has become a tool of the anti-vaccination movement to argue that vaccine injury is more prevalent then the government or pharmaceutical industry admits. This report examined the 2014 VAERS reports to see whether VAERS does show a substantial divergence in the vaccine injury rate. First we looked at the relationships in the underlying data, both to analyze it and examine its quality. This uncovered a lot of unreported variables and some large lapses of time before reporting the injury or between the vaccine and its onset. We also saw several general trends in the data: the higher frequency of women in the data set, the large number of reports from those in their sixties, the supremacy of the flu vaccine, and the increased frequency of reports in the fall. Then we took an in depth look at the VAERS data by focusing on the MMR vaccine. Through this we found that the percentage of children between 18 and 35 months old vaccinated for MMR who reported hospitalization or death was roughly in line with the medical community's estimate that 1 in a million patients would experience a severe reaction or injury to MMR. The fact that a system which, because it is self reporting, is likely to overestimating the rate of injury got so close to the pharmaceutical companies' expected proportion challenges the views of the anti-vaccination community. Rather than proving a discrepancy, the data instead seems to roughly concur with the medical consensus. While more analysis would need to be done on other vaccines, these early findings support the claims of vaccine manufacturers about the safety of vaccines.
+
+<br>
+
+#Footnotes
+[1]“About VAERS.” VAERS, US Department of Health and Human Services, https://vaers.hhs.gov/about.html.
+
+[2]ibid
+
+[3]“VAERS Data Sets.” VAERS, US Department of Health and Human Services, https://vaers.hhs.gov/data/datasets.html.
+
+[4]"Annual Estimates of the Resident Population by Sex, Race, and Hispanic Origin for the United States, States, and Counties: April 1, 2010 to July 1, 2014." American Fact Finder, United States Census Bureau, https://factfinder.census.gov/faces/tableservices/jsf/pages/productview.xhtml?pid=PEP_2018_PEPANNRES&prodType=table
+
+[5]Parker, Rosemary. “Vaccination Waivers Will Be Tougher to Obtain in Michigan Under New Rules.” Mlive, December 11, 2014. https://www.mlive.com/news/2014/12/vaccination_rule_change_propos.html.
+
+[6]“Zoster Vaccine.” Wikipedia. Accessed December 7, 2019. https://en.wikipedia.org/wiki/Zoster_vaccine.
+
+[7] ibid
+
+[8]“HPV Vaccine.” Wikipedia. Accessed December 7, 2019. 
+https://en.wikipedia.org/wiki/HPV_vaccine#History
+
+[9]Dominius, Susan. “What Happened to the Girls in Le Roy.” The New York Times Magazine, March 7, 2012. https://www.nytimes.com/2012/03/11/magazine/teenage-girls-twitching-le-roy.html.
+
+[10]“Varicella Vaccine.” Wikipedia. Accessed December 7, 2019. 
+https://en.wikipedia.org/wiki/Varicella_vaccine
+
+[11]“Possible Side Affects of Vaccines.” Centers for Disease Control and Prevention. Centers for Disease Control and Prevention, August 15, 2019. https://www.cdc.gov/vaccines/vac-gen/side-effects.htm.
+
+[12]“NIS - Datasets and Related Documentation for the National Immunization Survey, 2010 to 2014.” Centers for Disease Control and Prevention, Centers for Disease Control and Prevention, 6 Nov. 2015, https://www.cdc.gov/nchs/nis/data_files.htm.
+
+[13]“Child Population by Age Group: KIDS COUNT Data Center.” KIDS COUNT Data Center: A Project of the Annie E. Casey Foundation, Annie E Casey Foundation, https://datacenter.kidscount.org/data/tables/101-child-population-by-age-group#detailed/1/any/false/37,871,870,573,869,36,868,867,133,38/62,63,64,6,4693/419,420.
+
+[14]“Lists of State and Territories in the United States by Population.” Wikipedia. Accessed December 7, 2019.
+https://en.wikipedia.org/wiki/List_of_states_and_territories_of_the_United_States_by_population#State_rankings
+
+[15] ibid.
+
+[16] Spencer, Jeanne P., Ruth H. Trondsen Pawlowski, and Stephanie Thomas. “Vaccine Adverse Events: Separating Myth from Reality.” American Family Physician, June 15, 2017. https://www.aafp.org/afp/2017/0615/p786.html#afp20170615p786-b14.
